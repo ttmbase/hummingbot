@@ -60,19 +60,20 @@ HEADER = """
 ██   ██ ██    ██ ██  ██  ██ ██  ██  ██ ██ ██  ██ ██ ██    ██ ██   ██ ██    ██    ██
 ██   ██  ██████  ██      ██ ██      ██ ██ ██   ████  ██████  ██████   ██████     ██
 
-======================================================================================
-Hummingbot is an open source software client that helps you build and run
-market making, arbitrage, and other high-frequency trading bots.
+=======================================================================================
+Welcome to Hummingbot, an open source software client that helps you build and run
+high-frequency trading (HFT) bots.
 
-- Official repo: https://github.com/hummingbot/hummingbot
-- Join the community: https://discord.gg/hummingbot
-- Learn market making: https://hummingbot.org/botcamp
+Helpful Links:
+- Get 24/7 support: https://discord.hummingbot.io
+- Learn how to use Hummingbot: https://docs.hummingbot.io
+- Earn liquidity rewards: https://miner.hummingbot.io
 
 Useful Commands:
 - connect     List available exchanges and add API keys to them
-- balance     See your exchange balances
-- start       Start a script or strategy
-- help        List all commands
+- create      Create a new bot
+- import      Import an existing bot by loading the configuration file
+- help        List available commands
 
 """
 

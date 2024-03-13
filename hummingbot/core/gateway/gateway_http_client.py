@@ -6,7 +6,6 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import aiohttp
-from aiohttp import ContentTypeError
 
 from hummingbot.client.config.security import Security
 from hummingbot.core.data_type.common import OrderType, PositionSide
@@ -109,7 +108,7 @@ class GatewayHttpClient:
         If the API returns an error code, interpret the code, log a useful
         message to the user, then raise an exception.
         """
-        error_code: Optional[int] = resp.get("errorCode") if isinstance(resp, dict) else None
+        error_code: Optional[int] = resp.get("errorCode")
         if error_code is not None:
             if error_code == GatewayError.Network.value:
                 self.logger().network("Gateway had a network error. Make sure it is still able to communicate with the node.")
@@ -195,10 +194,7 @@ class GatewayHttpClient:
             if not fail_silently and response.status == 504:
                 self.logger().network(f"The network call to {url} has timed out.")
             else:
-                try:
-                    parsed_response = await response.json()
-                except ContentTypeError:
-                    parsed_response = await response.text()
+                parsed_response = await response.json()
                 if response.status != 200 and \
                    not fail_silently and \
                    not self.is_timeout_error(parsed_response):
@@ -492,7 +488,7 @@ class GatewayHttpClient:
             "quote": quote_asset,
             "side": side.name,
             "amount": f"{amount:.18f}",
-            "limitPrice": f"{price:.20f}",
+            "limitPrice": str(price),
             "allowedSlippage": "0/1",  # hummingbot applies slippage itself
         }
         if nonce is not None:

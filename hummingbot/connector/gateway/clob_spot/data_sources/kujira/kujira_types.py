@@ -82,8 +82,6 @@ class OrderType(Enum):
     def from_hummingbot(target: HummingBotOrderType):
         if target == HummingBotOrderType.LIMIT:
             return OrderType.LIMIT
-        if target == HummingBotOrderType.MARKET:
-            return OrderType.MARKET
         else:
             raise ValueError(f'Unrecognized order type "{target}".')
 
@@ -91,8 +89,6 @@ class OrderType(Enum):
     def to_hummingbot(self):
         if self == OrderType.LIMIT:
             return HummingBotOrderType.LIMIT
-        if self == OrderType.MARKET:
-            return HummingBotOrderType.MARKET
         else:
             raise ValueError(f'Unrecognized order type "{self}".')
 

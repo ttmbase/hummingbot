@@ -775,7 +775,7 @@ cdef class KrakenExchange(ExchangeBase):
         return result
 
     def supported_order_types(self):
-        return [OrderType.LIMIT, OrderType.LIMIT_MAKER, OrderType.MARKET]
+        return [OrderType.LIMIT, OrderType.LIMIT_MAKER]
 
     async def place_order(self,
                           userref: int,
@@ -789,7 +789,7 @@ cdef class KrakenExchange(ExchangeBase):
         data = {
             "pair": trading_pair,
             "type": "buy" if is_buy else "sell",
-            "ordertype": "market" if order_type is OrderType.MARKET else "limit",
+            "ordertype": "limit",
             "volume": str(amount),
             "userref": userref,
             "price": str(price)
@@ -822,7 +822,7 @@ cdef class KrakenExchange(ExchangeBase):
         try:
             order_result = None
             order_decimal_amount = f"{decimal_amount:f}"
-            if order_type in self.supported_order_types():
+            if order_type is OrderType.LIMIT or order_type is OrderType.LIMIT_MAKER:
                 order_decimal_price = f"{decimal_price:f}"
                 self.c_start_tracking_order(
                     order_id,
@@ -865,12 +865,7 @@ cdef class KrakenExchange(ExchangeBase):
 
         except Exception as e:
             self.c_stop_tracking_order(order_id)
-            if order_type is OrderType.LIMIT:
-                order_type_str = 'LIMIT'
-            elif order_type is OrderType.LIMIT_MAKER:
-                order_type_str = 'LIMIT_MAKER'
-            else:
-                order_type_str = 'MARKET'
+            order_type_str = 'LIMIT' if order_type is OrderType.LIMIT else "LIMIT_MAKER"
             self.logger().network(
                 f"Error submitting buy {order_type_str} order to Kraken for "
                 f"{decimal_amount} {trading_pair}"
@@ -910,7 +905,7 @@ cdef class KrakenExchange(ExchangeBase):
         try:
             order_result = None
             order_decimal_amount = f"{decimal_amount:f}"
-            if order_type in self.supported_order_types():
+            if order_type is OrderType.LIMIT or order_type is OrderType.LIMIT_MAKER:
                 order_decimal_price = f"{decimal_price:f}"
                 self.c_start_tracking_order(
                     order_id,
@@ -951,12 +946,7 @@ cdef class KrakenExchange(ExchangeBase):
             raise
         except Exception:
             self.c_stop_tracking_order(order_id)
-            if order_type is OrderType.LIMIT:
-                order_type_str = 'LIMIT'
-            elif order_type is OrderType.LIMIT_MAKER:
-                order_type_str = 'LIMIT_MAKER'
-            else:
-                order_type_str = 'MAKER'
+            order_type_str = 'LIMIT' if order_type is OrderType.LIMIT else "LIMIT_MAKER"
             self.logger().network(
                 f"Error submitting sell {order_type_str} order to Kraken for "
                 f"{decimal_amount} {trading_pair} "
