@@ -1,7 +1,7 @@
 from typing import Callable, Optional
 from urllib.parse import urljoin
 
-import hummingbot.connector.exchange.opencex.opencex_constants as CONSTANTS
+import hummingbot.connector.exchange.ttmbase.ttmbase_constants as CONSTANTS
 from hummingbot.connector.time_synchronizer import TimeSynchronizer
 from hummingbot.connector.utils import TimeSynchronizerRESTPreProcessor
 from hummingbot.core.api_throttler.async_throttler import AsyncThrottler
@@ -15,11 +15,11 @@ def public_rest_url(path_url: str, domain: str = CONSTANTS.DEFAULT_DOMAIN) -> st
     Creates a full URL for provided REST endpoint
 
     :param path_url: a public REST endpoint
-    :param domain: not required for OpenCEX. Added only for compatibility.
+    :param domain: not required for TTMBASE. Added only for compatibility.
 
     :return: the full URL to the endpoint
     """
-    return urljoin(CONSTANTS.OPENCEX_BASE_URL, path_url)
+    return urljoin(CONSTANTS.TTMBASE_BASE_URL, path_url)
 
 
 def private_rest_url(path_url: str, domain: str = CONSTANTS.DEFAULT_DOMAIN) -> str:
@@ -59,9 +59,9 @@ async def get_current_server_time(
     api_factory = build_api_factory_without_time_synchronizer_pre_processor(throttler=throttler)
     rest_assistant = await api_factory.get_rest_assistant()
     response = await rest_assistant.execute_request(
-        url=public_rest_url(path_url=CONSTANTS.OPENCEX_SERVER_TIME_PATH),
+        url=public_rest_url(path_url=CONSTANTS.TTMBASE_SERVER_TIME_PATH),
         method=RESTMethod.GET,
-        throttler_limit_id=CONSTANTS.OPENCEX_SERVER_TIME_PATH,
+        throttler_limit_id=CONSTANTS.TTMBASE_SERVER_TIME_PATH,
     )
     server_time = float(response["server_time"])
 

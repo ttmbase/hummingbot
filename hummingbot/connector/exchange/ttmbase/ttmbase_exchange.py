@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from aiohttp import ContentTypeError
 from bidict import bidict
 
-from hummingbot.connector.exchange.opencex import opencex_constants as CONSTANTS, opencex_web_utils as web_utils
-from hummingbot.connector.exchange.opencex.opencex_api_order_book_data_source import OpencexAPIOrderBookDataSource
-from hummingbot.connector.exchange.opencex.opencex_api_user_stream_data_source import OpencexAPIUserStreamDataSource
-from hummingbot.connector.exchange.opencex.opencex_auth import OpencexAuth
-from hummingbot.connector.exchange.opencex.opencex_utils import get_opencex_order_state, to_decimal
+from hummingbot.connector.exchange.ttmbase import ttmbase_constants as CONSTANTS, ttmbase_web_utils as web_utils
+from hummingbot.connector.exchange.ttmbase.ttmbase_api_order_book_data_source import TtmbaseAPIOrderBookDataSource
+from hummingbot.connector.exchange.ttmbase.ttmbase_api_user_stream_data_source import TtmbaseAPIUserStreamDataSource
+from hummingbot.connector.exchange.ttmbase.ttmbase_auth import TtmbaseAuth
+from hummingbot.connector.exchange.ttmbase.ttmbase_utils import get_ttmbase_order_state, to_decimal
 from hummingbot.connector.exchange_base import s_decimal_NaN
 from hummingbot.connector.exchange_py_base import ExchangePyBase
 from hummingbot.connector.trading_rule import TradingRule
@@ -27,33 +27,33 @@ if TYPE_CHECKING:
     from hummingbot.client.config.config_helpers import ClientConfigAdapter
 
 
-class OpencexExchange(ExchangePyBase):
+class TtmbaseExchange(ExchangePyBase):
 
     web_utils = web_utils
 
     def __init__(self,
                  client_config_map: "ClientConfigAdapter",
-                 opencex_api_key: str,
-                 opencex_secret_key: str,
+                 ttmbase_api_key: str,
+                 ttmbase_secret_key: str,
                  trading_pairs: Optional[List[str]] = None,
                  trading_required: bool = True):
 
-        self.opencex_api_key = opencex_api_key
-        self.opencex_secret_key = opencex_secret_key
+        self.ttmbase_api_key = ttmbase_api_key
+        self.ttmbase_secret_key = ttmbase_secret_key
         self._trading_required = trading_required
         self._trading_pairs = trading_pairs
         super().__init__(client_config_map)
 
     @property
     def authenticator(self):
-        return OpencexAuth(
-            api_key=self.opencex_api_key,
-            secret_key=self.opencex_secret_key,
+        return TtmbaseAuth(
+            api_key=self.ttmbase_api_key,
+            secret_key=self.ttmbase_secret_key,
             time_provider=self._time_synchronizer)
 
     @property
     def name(self) -> str:
-        return "opencex"
+        return "ttmbase"
 
     @property
     def rate_limits_rules(self):
@@ -73,15 +73,15 @@ class OpencexExchange(ExchangePyBase):
 
     @property
     def trading_rules_request_path(self):
-        return CONSTANTS.OPENCEX_INSTRUMENTS_PATH
+        return CONSTANTS.TTMBASE_INSTRUMENTS_PATH
 
     @property
     def trading_pairs_request_path(self):
-        return CONSTANTS.OPENCEX_INSTRUMENTS_PATH
+        return CONSTANTS.TTMBASE_INSTRUMENTS_PATH
 
     @property
     def check_network_request_path(self):
-        return CONSTANTS.OPENCEX_SERVER_TIME_PATH
+        return CONSTANTS.TTMBASE_SERVER_TIME_PATH
 
     @property
     def trading_pairs(self):
@@ -124,13 +124,13 @@ class OpencexExchange(ExchangePyBase):
             auth=self._auth)
 
     def _create_order_book_data_source(self) -> OrderBookTrackerDataSource:
-        return OpencexAPIOrderBookDataSource(
+        return TtmbaseAPIOrderBookDataSource(
             trading_pairs=self.trading_pairs,
             connector=self,
             api_factory=self._web_assistants_factory)
 
     def _create_user_stream_data_source(self) -> UserStreamTrackerDataSource:
-        return OpencexAPIUserStreamDataSource(
+        return TtmbaseAPIUserStreamDataSource(
             auth=self._auth,
             connector=self,
             api_factory=self._web_assistants_factory)
@@ -227,11 +227,11 @@ class OpencexExchange(ExchangePyBase):
         }
 
         order_resp = await self._api_request(
-            path_url=CONSTANTS.OPENCEX_PLACE_ORDER_PATH,
+            path_url=CONSTANTS.TTMBASE_PLACE_ORDER_PATH,
             method=RESTMethod.POST,
             data=data,
             is_auth_required=True,
-            limit_id=CONSTANTS.OPENCEX_PLACE_ORDER_PATH,
+            limit_id=CONSTANTS.TTMBASE_PLACE_ORDER_PATH,
         )
         self.logger().debug(f"Created: {order_resp['id']}")
         return str(order_resp["id"]), self.current_timestamp
@@ -244,10 +244,10 @@ class OpencexExchange(ExchangePyBase):
             return False
         try:
             await self._api_request(
-                path_url=CONSTANTS.OPENCEX_ORDER_CANCEL_PATH.format(order_id=tracked_order.exchange_order_id),
+                path_url=CONSTANTS.TTMBASE_ORDER_CANCEL_PATH.format(order_id=tracked_order.exchange_order_id),
                 method=RESTMethod.DELETE,
                 is_auth_required=True,
-                limit_id=CONSTANTS.OPENCEX_ORDER_CANCEL_PATH,
+                limit_id=CONSTANTS.TTMBASE_ORDER_CANCEL_PATH,
             )
         except ContentTypeError:
             pass
@@ -263,14 +263,14 @@ class OpencexExchange(ExchangePyBase):
         pair = await self.exchange_symbol_associated_to_pair(trading_pair=trading_pair)
 
         resp_json = await self._api_request(
-            path_url=CONSTANTS.OPENCEX_TICKER_PATH
+            path_url=CONSTANTS.TTMBASE_TICKER_PATH
         )
         ticker_data = resp_json[pair]
         return float(ticker_data["last_price"])
 
     async def _update_balances(self):
         balances = await self._api_request(
-            path_url=CONSTANTS.OPENCEX_BALANCE_PATH,
+            path_url=CONSTANTS.TTMBASE_BALANCE_PATH,
             is_auth_required=True)
 
         self._account_available_balances.clear()
@@ -290,9 +290,9 @@ class OpencexExchange(ExchangePyBase):
 
         res = await self._api_request(
             method=RESTMethod.GET,
-            path_url=CONSTANTS.OPENCEX_ORDER_DETAILS_PATH.format(order_id=order.exchange_order_id),
+            path_url=CONSTANTS.TTMBASE_ORDER_DETAILS_PATH.format(order_id=order.exchange_order_id),
             is_auth_required=True,
-            limit_id=CONSTANTS.OPENCEX_ORDER_DETAILS_PATH,
+            limit_id=CONSTANTS.TTMBASE_ORDER_DETAILS_PATH,
         )
         return res
 
@@ -303,7 +303,7 @@ class OpencexExchange(ExchangePyBase):
     async def _request_order_status(self, tracked_order: InFlightOrder) -> OrderUpdate:
         updated_order_data = await self._request_order_update(order=tracked_order)
 
-        new_state = get_opencex_order_state(updated_order_data)
+        new_state = get_ttmbase_order_state(updated_order_data)
 
         order_update = OrderUpdate(
             client_order_id=tracked_order.client_order_id,
@@ -319,9 +319,9 @@ class OpencexExchange(ExchangePyBase):
             try:
                 channel = stream_message.get("kind", None)
 
-                if channel in [CONSTANTS.OPENCEX_WS_OPENED_ORDERS_CHANNEL, CONSTANTS.OPENCEX_WS_CLOSED_ORDERS_CHANNEL]:
+                if channel in [CONSTANTS.TTMBASE_WS_OPENED_ORDERS_CHANNEL, CONSTANTS.TTMBASE_WS_CLOSED_ORDERS_CHANNEL]:
                     for data in stream_message.get("results", []):
-                        order_state = get_opencex_order_state(data)
+                        order_state = get_ttmbase_order_state(data)
                         exchange_order_id = str(data["id"])
                         # fillable_order = self._order_tracker.all_updatable_orders_by_exchange_order_id.get(exchange_order_id)
                         updatable_order = self._order_tracker.all_updatable_orders_by_exchange_order_id.get(exchange_order_id)
@@ -363,7 +363,7 @@ class OpencexExchange(ExchangePyBase):
                                 f"N/A - id:{exchange_order_id}, s:{order_state}, q:{data['quantity']}, ql:{data['quantity_left']}")
 
 
-                elif channel == CONSTANTS.OPENCEX_WS_ACCOUNT_CHANNEL:
+                elif channel == CONSTANTS.TTMBASE_WS_ACCOUNT_CHANNEL:
                     balance_dict = stream_message.get("balance", {})
                     self._update_balance_from_details(balance_dict)
 

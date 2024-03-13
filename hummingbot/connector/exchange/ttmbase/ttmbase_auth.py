@@ -1,10 +1,10 @@
-from hummingbot.connector.exchange.opencex.opencex_utils import generate_signature_headers
+from hummingbot.connector.exchange.ttmbase.ttmbase_utils import generate_signature_headers
 from hummingbot.connector.time_synchronizer import TimeSynchronizer
 from hummingbot.core.web_assistant.auth import AuthBase
 from hummingbot.core.web_assistant.connections.data_types import RESTRequest, WSRequest
 
 
-class OpencexAuth(AuthBase):
+class TtmbaseAuth(AuthBase):
 
     def __init__(self, api_key: str, secret_key: str, time_provider: TimeSynchronizer):
         self.api_key: str = api_key
@@ -33,7 +33,7 @@ class OpencexAuth(AuthBase):
 
     async def ws_authenticate(self, request: WSRequest) -> WSRequest:
         """
-        This method is intended to configure a websocket request to be authenticated. OpenCEX does not use this
+        This method is intended to configure a websocket request to be authenticated. TTMBASE does not use this
         functionality
         """
         return request  # pass-through

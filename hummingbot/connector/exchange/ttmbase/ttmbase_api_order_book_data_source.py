@@ -1,7 +1,7 @@
 import asyncio
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from hummingbot.connector.exchange.opencex import opencex_constants as CONSTANTS, opencex_web_utils as web_utils
+from hummingbot.connector.exchange.ttmbase import ttmbase_constants as CONSTANTS, ttmbase_web_utils as web_utils
 from hummingbot.core.data_type.common import TradeType
 from hummingbot.core.data_type.order_book_message import OrderBookMessage, OrderBookMessageType
 from hummingbot.core.data_type.order_book_tracker_data_source import OrderBookTrackerDataSource
@@ -11,16 +11,16 @@ from hummingbot.core.web_assistant.ws_assistant import WSAssistant
 from hummingbot.logger import HummingbotLogger
 
 if TYPE_CHECKING:
-    from hummingbot.connector.exchange.opencex.opencex_exchange import OpencexExchange
+    from hummingbot.connector.exchange.ttmbase.ttmbase_exchange import TtmbaseExchange
 
 
-class OpencexAPIOrderBookDataSource(OrderBookTrackerDataSource):
+class TtmbaseAPIOrderBookDataSource(OrderBookTrackerDataSource):
 
     _logger: Optional[HummingbotLogger] = None
 
     def __init__(self,
                  trading_pairs: List[str],
-                 connector: 'OpencexExchange',
+                 connector: 'TtmbaseExchange',
                  api_factory: WebAssistantsFactory):
         super().__init__(trading_pairs)
         self._connector = connector
@@ -61,10 +61,10 @@ class OpencexAPIOrderBookDataSource(OrderBookTrackerDataSource):
 
         rest_assistant = await self._api_factory.get_rest_assistant()
         data = await rest_assistant.execute_request(
-            url=web_utils.public_rest_url(path_url=CONSTANTS.OPENCEX_ORDER_BOOK_PATH.format(pair=pair)),
+            url=web_utils.public_rest_url(path_url=CONSTANTS.TTMBASE_ORDER_BOOK_PATH.format(pair=pair)),
             params={"limit": 400},
             method=RESTMethod.GET,
-            throttler_limit_id=CONSTANTS.OPENCEX_ORDER_BOOK_PATH,
+            throttler_limit_id=CONSTANTS.TTMBASE_ORDER_BOOK_PATH,
         )
 
         return data
@@ -111,7 +111,7 @@ class OpencexAPIOrderBookDataSource(OrderBookTrackerDataSource):
             message_queue.put_nowait(trade_message)
 
     async def _parse_order_book_diff_message(self, raw_message: Dict[str, Any], message_queue: asyncio.Queue):
-        # Opencex never sends diff messages. This method will never be called
+        # Ttmbase never sends diff messages. This method will never be called
         pass
 
     async def _subscribe_channels(self, ws: WSAssistant):
@@ -143,9 +143,9 @@ class OpencexAPIOrderBookDataSource(OrderBookTrackerDataSource):
         channel = None
         if "kind" in event_message:
             event_channel = event_message["kind"]
-            if event_channel == CONSTANTS.OPENCEX_WS_PUBLIC_TRADES_CHANNEL:
+            if event_channel == CONSTANTS.TTMBASE_WS_PUBLIC_TRADES_CHANNEL:
                 channel = self._trade_messages_queue_key
-            elif event_channel == CONSTANTS.OPENCEX_WS_PUBLIC_BOOKS_CHANNEL:
+            elif event_channel == CONSTANTS.TTMBASE_WS_PUBLIC_BOOKS_CHANNEL:
                 channel = self._snapshot_messages_queue_key
         return channel
 
@@ -161,7 +161,7 @@ class OpencexAPIOrderBookDataSource(OrderBookTrackerDataSource):
         ws: WSAssistant = await self._api_factory.get_ws_assistant()
         async with self._api_factory.throttler.execute_task(limit_id=CONSTANTS.WS_CONNECTION_LIMIT_ID):
             await ws.connect(
-                ws_url=CONSTANTS.OPENCEX_WS_URI_PUBLIC,
+                ws_url=CONSTANTS.TTMBASE_WS_URI_PUBLIC,
                 ping_timeout=CONSTANTS.PING_TIMEOUT,
                 message_timeout=CONSTANTS.SECONDS_TO_WAIT_TO_RECEIVE_MESSAGE)
         return ws

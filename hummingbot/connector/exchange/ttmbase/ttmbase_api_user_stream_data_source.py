@@ -1,8 +1,8 @@
 import asyncio
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
-from hummingbot.connector.exchange.opencex import opencex_constants as CONSTANTS
-from hummingbot.connector.exchange.opencex.opencex_auth import OpencexAuth
+from hummingbot.connector.exchange.ttmbase import ttmbase_constants as CONSTANTS
+from hummingbot.connector.exchange.ttmbase.ttmbase_auth import TtmbaseAuth
 from hummingbot.core.data_type.user_stream_tracker_data_source import UserStreamTrackerDataSource
 from hummingbot.core.web_assistant.connections.data_types import WSJSONRequest, WSPlainTextRequest, WSResponse
 from hummingbot.core.web_assistant.web_assistants_factory import WebAssistantsFactory
@@ -10,20 +10,20 @@ from hummingbot.core.web_assistant.ws_assistant import WSAssistant
 from hummingbot.logger import HummingbotLogger
 
 if TYPE_CHECKING:
-    from hummingbot.connector.exchange.opencex.opencex_exchange import OpencexExchange
+    from hummingbot.connector.exchange.ttmbase.ttmbase_exchange import TtmbaseExchange
 
 
-class OpencexAPIUserStreamDataSource(UserStreamTrackerDataSource):
+class TtmbaseAPIUserStreamDataSource(UserStreamTrackerDataSource):
 
     _logger: Optional[HummingbotLogger] = None
 
     def __init__(
             self,
-            auth: OpencexAuth,
-            connector: 'OpencexExchange',
+            auth: TtmbaseAuth,
+            connector: 'TtmbaseExchange',
             api_factory: WebAssistantsFactory):
         super().__init__()
-        self._auth: OpencexAuth = auth
+        self._auth: TtmbaseAuth = auth
         self._connector = connector
         self._api_factory = api_factory
 
@@ -35,7 +35,7 @@ class OpencexAPIUserStreamDataSource(UserStreamTrackerDataSource):
         ws: WSAssistant = await self._get_ws_assistant()
         async with self._api_factory.throttler.execute_task(limit_id=CONSTANTS.WS_CONNECTION_LIMIT_ID):
             await ws.connect(
-                ws_url=CONSTANTS.OPENCEX_WS_URI_PRIVATE,
+                ws_url=CONSTANTS.TTMBASE_WS_URI_PRIVATE,
                 ping_timeout=CONSTANTS.PING_TIMEOUT,
                 message_timeout=CONSTANTS.SECONDS_TO_WAIT_TO_RECEIVE_MESSAGE,
                 ws_headers=await self._auth.get_ws_authentication_headers(),

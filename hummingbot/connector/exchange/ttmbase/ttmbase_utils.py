@@ -18,21 +18,21 @@ CENTRALIZED = True
 EXAMPLE_PAIR = "BTC-USDT"
 
 
-class OpencexConfigMap(BaseConnectorConfigMap):
-    connector: str = Field(default="opencex", const=True, client_data=None)
-    opencex_api_key: SecretStr = Field(
+class TtmbaseConfigMap(BaseConnectorConfigMap):
+    connector: str = Field(default="ttmbase", const=True, client_data=None)
+    ttmbase_api_key: SecretStr = Field(
         default=...,
         client_data=ClientFieldData(
-            prompt=lambda cm: "Enter your OpenCEX API key",
+            prompt=lambda cm: "Enter your TTMBASE API key",
             is_secure=True,
             is_connect_key=True,
             prompt_on_new=True,
         ),
     )
-    opencex_secret_key: SecretStr = Field(
+    ttmbase_secret_key: SecretStr = Field(
         default=...,
         client_data=ClientFieldData(
-            prompt=lambda cm: "Enter your OpenCEX secret key",
+            prompt=lambda cm: "Enter your TTMBASE secret key",
             is_secure=True,
             is_connect_key=True,
             prompt_on_new=True,
@@ -40,10 +40,10 @@ class OpencexConfigMap(BaseConnectorConfigMap):
     )
 
 
-KEYS = OpencexConfigMap.construct()
+KEYS = TtmbaseConfigMap.construct()
 
 
-def get_opencex_order_state(order_data):
+def get_ttmbase_order_state(order_data):
     new_state = OrderState.OPEN
     if order_data["state"] == 1:
         new_state = OrderState.FILLED
